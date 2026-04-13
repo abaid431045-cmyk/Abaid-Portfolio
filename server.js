@@ -15,8 +15,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER,    // your Gmail: abaid.rehman.pk@gmail.com
-    pass: process.env.EMAIL_PASS,    // Gmail App Password (16-char)
+    user: process.env.EMAIL_USER,    // Apka Gmail
+    pass: process.env.EMAIL_PASS,    // Apka 16-char App Password
   }
 });
 
@@ -24,16 +24,11 @@ const transporter = nodemailer.createTransport({
 app.post('/api/contact', async (req, res) => {
   const { name, email, subject, message } = req.body;
 
-  // Basic validation
   if (!name || !email || !message) {
-    return res.status(400).json({ success: false, error: 'Name, email, and message are required.' });
-  }
-  const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRx.test(email)) {
-    return res.status(400).json({ success: false, error: 'Invalid email address.' });
+    return res.status(400).json({ success: false, error: 'All fields are required.' });
   }
 
-  // Email to YOU (portfolio owner)
+  // 1. Email to YOU (Admin Notification)
   const ownerMail = {
     from: `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
     to: process.env.EMAIL_USER,
@@ -41,52 +36,48 @@ app.post('/api/contact', async (req, res) => {
     subject: subject ? `[Portfolio] ${subject}` : `[Portfolio] New message from ${name}`,
     html: `
       <div style="font-family:sans-serif;max-width:580px;margin:auto;border:1px solid #e5e5e5;border-radius:8px;overflow:hidden;">
-        <div style="background:#0D0D14;padding:28px 32px;">
-          <h2 style="color:#C9A84C;margin:0;font-size:22px;">New Portfolio Message</h2>
+        <div style="background:#0D1117;padding:28px 32px;border-bottom:1px solid #C8A84B;">
+          <h2 style="color:#C8A84B;margin:0;font-size:22px;">New Portfolio Message</h2>
         </div>
-        <div style="padding:32px;">
-          <table style="width:100%;border-collapse:collapse;">
-            <tr><td style="padding:8px 0;color:#666;font-size:13px;width:100px;">From</td><td style="padding:8px 0;font-weight:600;color:#111;">${name}</td></tr>
-            <tr><td style="padding:8px 0;color:#666;font-size:13px;">Email</td><td style="padding:8px 0;"><a href="mailto:${email}" style="color:#C9A84C;">${email}</a></td></tr>
-            ${subject ? `<tr><td style="padding:8px 0;color:#666;font-size:13px;">Subject</td><td style="padding:8px 0;color:#111;">${subject}</td></tr>` : ''}
-          </table>
-          <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0;">
-          <p style="color:#444;font-size:14px;line-height:1.7;white-space:pre-wrap;">${message}</p>
-        </div>
-        <div style="background:#f9f9f9;padding:16px 32px;font-size:12px;color:#999;">
-          Sent from your portfolio website · abaid.rehman.pk
+        <div style="padding:32px; background: #fff; color: #333;">
+          <p><strong>From:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Subject:</strong> ${subject || 'N/A'}</p>
+          <hr style="border:none;border-top:1px solid #eee;margin:20px 0;">
+          <p><strong>Message:</strong></p>
+          <p style="background:#f9f9f9;padding:15px;border-radius:5px;line-height:1.6;">${message}</p>
         </div>
       </div>
     `
   };
 
-  // Auto-reply to SENDER
+  // 2. AUTO-REPLY TO SENDER (Professional Confirmation)
   const autoReply = {
     from: `"Abaid ur Rehman" <${process.env.EMAIL_USER}>`,
     to: email,
-    subject: 'Thanks for reaching out — Abaid ur Rehman',
+    subject: "Thank You for Your Message – We'll Be in Touch Soon",
     html: `
-      <div style="font-family:sans-serif;max-width:580px;margin:auto;border:1px solid #e5e5e5;border-radius:8px;overflow:hidden;">
-        <div style="background:#0D0D14;padding:28px 32px;">
-          <h2 style="color:#C9A84C;margin:0;font-size:22px;">Message Received!</h2>
-        </div>
-        <div style="padding:32px;">
-          <p style="color:#333;font-size:15px;line-height:1.7;">Hi <strong>${name}</strong>,</p>
-          <p style="color:#555;font-size:14px;line-height:1.8;margin-top:12px;">
-            Thank you for getting in touch! I've received your message and will get back to you within <strong>24 hours</strong>.
-          </p>
-          <p style="color:#555;font-size:14px;line-height:1.8;margin-top:12px;">
-            Meanwhile, feel free to reach me directly at:<br>
-            📞 <strong>+92 327-0613045</strong>
-          </p>
-          <div style="margin-top:28px;padding:20px;background:#fafaf7;border-radius:6px;border-left:3px solid #C9A84C;">
-            <p style="margin:0;font-size:13px;color:#888;">Your message:</p>
-            <p style="margin:8px 0 0;font-size:14px;color:#333;line-height:1.7;white-space:pre-wrap;">${message}</p>
+      <div style="font-family: 'DM Sans', Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #C8A84B; border-radius: 12px; padding: 40px 30px; background-color: #080C10; color: #E8EBF0; line-height: 1.8;">
+        <h2 style="color: #C8A84B; margin-top: 0;">Hi ${name},</h2>
+        
+        <p style="font-size: 16px;">
+          Thank you for reaching out! This is an automated confirmation to let you know that your message has been successfully received.
+        </p>
+        
+        <p style="font-size: 16px;">
+          I will review it shortly and get back to you as soon as possible. In the meantime, if your matter is urgent, please don't hesitate to contact me directly.
+        </p>
+
+        <div style="margin-top: 40px; border-top: 1px solid rgba(200,168,75,0.2); padding-top: 20px;">
+          <p style="margin: 0; font-weight: 600; color: #C8A84B;">Warm regards,</p>
+          <p style="margin: 5px 0 0; font-size: 18px;">Abaid ur Rehman</p>
+          <p style="margin: 0; font-size: 12px; color: #6B7280; text-transform: uppercase; letter-spacing: 1px;">Full-Stack Software Engineer</p>
+          
+          <div style="margin-top: 15px; font-size: 13px;">
+            <a href="https://github.com/abaid431045-cmyk" style="color:#C8A84B; text-decoration:none; margin-right:15px;">GitHub</a>
+            <a href="https://www.linkedin.com/in/abaid-ur-rehman-933666400" style="color:#C8A84B; text-decoration:none; margin-right:15px;">LinkedIn</a>
+            <span style="color:#6B7280;">📞 0327-0613045</span>
           </div>
-        </div>
-        <div style="background:#0D0D14;padding:20px 32px;text-align:center;">
-          <p style="margin:0;color:#C9A84C;font-size:14px;font-weight:600;">Abaid ur Rehman</p>
-          <p style="margin:4px 0 0;color:#666;font-size:12px;">Full Stack Developer · Pakistan</p>
         </div>
       </div>
     `
@@ -98,11 +89,10 @@ app.post('/api/contact', async (req, res) => {
     res.json({ success: true, message: 'Email sent successfully.' });
   } catch (err) {
     console.error('Email error:', err.message);
-    res.status(500).json({ success: false, error: 'Failed to send email. Please try again.' });
+    res.status(500).json({ success: false, error: 'Failed to send email.' });
   }
 });
 
-// Serve index.html for all other routes (SPA)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
