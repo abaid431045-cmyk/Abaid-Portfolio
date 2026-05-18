@@ -12,11 +12,14 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ─── EMAIL TRANSPORTER ───────────────────────────────────────────
+// ─── EMAIL TRANSPORTER ───────────────────────────────────────────
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true, // true for 465, false for other ports
   auth: {
-    user: process.env.EMAIL_USER,    // Apka Gmail
-    pass: process.env.EMAIL_PASS,    // Apka 16-char App Password
+    user: process.env.EMAIL_USER,    // abaid431045@gmail.com
+    pass: process.env.EMAIL_PASS,    // mlinhtcedkdhsrhx (bina spaces ke)
   }
 });
 
